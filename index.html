@@ -1,0 +1,1194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dream Journal</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --primary: #E63525;
+    --primary-hover: #C92E20;
+    --primary-light: #FFF0EE;
+    --primary-glow: rgba(230, 53, 37, 0.15);
+    --bg: #F5F5F0;
+    --card-bg: #FFFFFF;
+    --text: #1A1A1A;
+    --text-secondary: #6B6B6B;
+    --text-tertiary: #9A9A9A;
+    --border: #EBEBE5;
+    --shadow: 0 2px 12px rgba(0,0,0,0.06);
+    --shadow-hover: 0 8px 30px rgba(0,0,0,0.1);
+    --radius: 16px;
+    --radius-sm: 10px;
+    --radius-xs: 6px;
+    --font: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    --mood-happy: #F59E0B;
+    --mood-neutral: #3B82F6;
+    --mood-dark: #8B5CF6;
+    --mood-weird: #EC4899;
+    --mood-scary: #EF4444;
+    --mood-lucid: #10B981;
+  }
+  [data-theme="dark"] {
+    --bg: #0F0F0F;
+    --card-bg: #1A1A1A;
+    --text: #EDEDED;
+    --text-secondary: #9A9A9A;
+    --text-tertiary: #5A5A5A;
+    --border: #2A2A2A;
+    --shadow: 0 2px 12px rgba(0,0,0,0.3);
+    --shadow-hover: 0 8px 30px rgba(0,0,0,0.4);
+    --primary-light: #2A0F0D;
+  }
+  html, body { height: 100%; }
+  body {
+    font-family: var(--font);
+    background: var(--bg);
+    color: var(--text);
+    transition: background 0.3s, color 0.3s;
+    -webkit-font-smoothing: antialiased;
+  }
+  ::selection { background: var(--primary); color: #fff; }
+
+  /* Password Gate */
+  #gate {
+    position: fixed; inset: 0; z-index: 9999;
+    display: flex; align-items: center; justify-content: center;
+    background: var(--bg);
+  }
+  #gate.hidden { display: none; }
+  .gate-box {
+    width: 400px; max-width: 90vw;
+    padding: 48px 40px 40px;
+    background: var(--card-bg);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-hover);
+    text-align: center;
+  }
+  .gate-icon {
+    width: 64px; height: 64px;
+    background: var(--primary-light);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 24px;
+    font-size: 28px;
+  }
+  .gate-box h1 {
+    font-size: 24px; font-weight: 700;
+    margin-bottom: 8px;
+  }
+  .gate-box p {
+    color: var(--text-secondary);
+    font-size: 14px; margin-bottom: 28px;
+  }
+  .gate-box input {
+    width: 100%; padding: 14px 16px;
+    border: 2px solid var(--border);
+    border-radius: var(--radius-sm);
+    font-family: var(--font); font-size: 15px;
+    background: var(--card-bg);
+    color: var(--text);
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+  .gate-box input:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 4px var(--primary-glow);
+  }
+  .gate-box input::placeholder { color: var(--text-tertiary); }
+  .gate-box .error {
+    margin-top: 12px; font-size: 13px; color: var(--primary);
+    display: none;
+  }
+  .gate-box .error.show { display: block; }
+  .gate-btn {
+    width: 100%; padding: 14px;
+    margin-top: 16px;
+    background: var(--primary);
+    color: #fff;
+    border: none; border-radius: var(--radius-sm);
+    font-family: var(--font); font-size: 15px; font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.1s;
+  }
+  .gate-btn:hover { background: var(--primary-hover); }
+  .gate-btn:active { transform: scale(0.98); }
+
+  /* App Layout */
+  #app { display: none; height: 100vh; overflow: hidden; }
+  #app.active { display: flex; }
+
+  /* Sidebar */
+  .sidebar {
+    width: 280px; min-width: 280px;
+    background: var(--card-bg);
+    border-right: 1px solid var(--border);
+    display: flex; flex-direction: column;
+    padding: 28px 20px;
+    overflow-y: auto;
+  }
+  .sidebar-logo {
+    display: flex; align-items: center; gap: 10px;
+    font-size: 20px; font-weight: 800;
+    letter-spacing: -0.5px;
+    margin-bottom: 36px;
+  }
+  .sidebar-logo .dot {
+    width: 10px; height: 10px;
+    background: var(--primary);
+    border-radius: 50%;
+  }
+  .sidebar-nav { flex: 1; }
+  .nav-item {
+    display: flex; align-items: center; gap: 12px;
+    padding: 10px 14px;
+    border-radius: var(--radius-sm);
+    font-size: 14px; font-weight: 500;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.15s;
+    margin-bottom: 4px;
+  }
+  .nav-item:hover { background: var(--bg); color: var(--text); }
+  .nav-item.active {
+    background: var(--primary-light);
+    color: var(--primary);
+    font-weight: 600;
+  }
+  .nav-item .badge {
+    margin-left: auto;
+    background: var(--border);
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-secondary);
+  }
+  .nav-item.active .badge { background: var(--primary); color: #fff; }
+  .nav-divider {
+    height: 1px; background: var(--border);
+    margin: 16px 0;
+  }
+  .theme-toggle {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 14px;
+    border-radius: var(--radius-sm);
+    font-size: 13px; font-weight: 500;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.15s;
+    margin-top: auto;
+  }
+  .theme-toggle:hover { background: var(--bg); color: var(--text); }
+
+  /* Main Content */
+  .main {
+    flex: 1; overflow-y: auto;
+    padding: 32px 40px 80px;
+  }
+  .main-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 32px;
+  }
+  .main-header h2 {
+    font-size: 28px; font-weight: 800;
+    letter-spacing: -0.5px;
+  }
+  .main-header .subtitle {
+    font-size: 14px; color: var(--text-secondary);
+    margin-top: 4px;
+  }
+  .main-actions { display: flex; gap: 10px; align-items: center; }
+
+  /* Stats Bar */
+  .stats-bar {
+    display: grid; grid-template-columns: repeat(4, 1fr);
+    gap: 12px; margin-bottom: 32px;
+  }
+  .stat-card {
+    background: var(--card-bg);
+    border-radius: var(--radius-sm);
+    padding: 18px 20px;
+    box-shadow: var(--shadow);
+    border: 1px solid var(--border);
+  }
+  .stat-card .num {
+    font-size: 26px; font-weight: 800;
+    letter-spacing: -0.5px;
+    color: var(--text);
+  }
+  .stat-card .label {
+    font-size: 12px; font-weight: 500;
+    color: var(--text-tertiary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-top: 2px;
+  }
+
+  /* Filters */
+  .filters {
+    display: flex; gap: 8px; margin-bottom: 24px;
+    flex-wrap: wrap;
+  }
+  .filter-chip {
+    padding: 7px 16px;
+    border-radius: 20px;
+    font-size: 13px; font-weight: 500;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.15s;
+    font-family: var(--font);
+  }
+  .filter-chip:hover { border-color: var(--primary); color: var(--primary); }
+  .filter-chip.active {
+    background: var(--primary);
+    color: #fff;
+    border-color: var(--primary);
+  }
+
+  /* Dream Cards */
+  .dreams-list { display: flex; flex-direction: column; gap: 12px; }
+  .dream-card {
+    background: var(--card-bg);
+    border-radius: var(--radius);
+    padding: 24px 28px;
+    box-shadow: var(--shadow);
+    border: 1px solid var(--border);
+    cursor: pointer;
+    transition: all 0.2s;
+    position: relative;
+    overflow: hidden;
+  }
+  .dream-card::before {
+    content: '';
+    position: absolute; left: 0; top: 0; bottom: 0;
+    width: 4px;
+    border-radius: 0 2px 2px 0;
+  }
+  .dream-card[data-mood="happy"]::before { background: var(--mood-happy); }
+  .dream-card[data-mood="neutral"]::before { background: var(--mood-neutral); }
+  .dream-card[data-mood="dark"]::before { background: var(--mood-dark); }
+  .dream-card[data-mood="weird"]::before { background: var(--mood-weird); }
+  .dream-card[data-mood="scary"]::before { background: var(--mood-scary); }
+  .dream-card[data-mood="lucid"]::before { background: var(--mood-lucid); }
+  .dream-card:hover {
+    box-shadow: var(--shadow-hover);
+    transform: translateY(-2px);
+  }
+  .dream-card-header {
+    display: flex; align-items: flex-start; justify-content: space-between;
+    margin-bottom: 8px;
+  }
+  .dream-card-title {
+    font-size: 17px; font-weight: 600;
+    padding-left: 4px;
+  }
+  .dream-card-date {
+    font-size: 13px; color: var(--text-tertiary);
+    white-space: nowrap;
+  }
+  .dream-card-content {
+    font-size: 14px; line-height: 1.6;
+    color: var(--text-secondary);
+    padding-left: 4px;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .dream-card-tags {
+    display: flex; gap: 6px; flex-wrap: wrap;
+    margin-top: 12px; padding-left: 4px;
+  }
+  .dream-tag {
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-size: 11px; font-weight: 500;
+    background: var(--bg);
+    color: var(--text-secondary);
+  }
+  .dream-mood-tag {
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-size: 11px; font-weight: 600;
+    text-transform: capitalize;
+  }
+
+  /* Mood Colors on Tags */
+  .mood-happy .dream-mood-tag { background: #FEF3C7; color: #92400E; }
+  .mood-neutral .dream-mood-tag { background: #DBEAFE; color: #1E40AF; }
+  .mood-dark .dream-mood-tag { background: #EDE9FE; color: #5B21B6; }
+  .mood-weird .dream-mood-tag { background: #FCE7F3; color: #9D174D; }
+  .mood-scary .dream-mood-tag { background: #FEE2E2; color: #991B1B; }
+  .mood-lucid .dream-mood-tag { background: #D1FAE5; color: #065F46; }
+
+  [data-theme="dark"] .mood-happy .dream-mood-tag { background: #451A03; color: #FBBF24; }
+  [data-theme="dark"] .mood-neutral .dream-mood-tag { background: #1E3A5F; color: #60A5FA; }
+  [data-theme="dark"] .mood-dark .dream-mood-tag { background: #2E1E5E; color: #A78BFA; }
+  [data-theme="dark"] .mood-weird .dream-mood-tag { background: #4C1D3E; color: #F472B6; }
+  [data-theme="dark"] .mood-scary .dream-mood-tag { background: #4C1D1D; color: #F87171; }
+  [data-theme="dark"] .mood-lucid .dream-mood-tag { background: #0A3D2E; color: #34D399; }
+
+  /* Buttons */
+  .btn {
+    padding: 10px 20px;
+    border-radius: var(--radius-sm);
+    font-family: var(--font); font-size: 14px; font-weight: 600;
+    border: none;
+    cursor: pointer;
+    transition: all 0.15s;
+    display: inline-flex; align-items: center; gap: 8px;
+  }
+  .btn:active { transform: scale(0.97); }
+  .btn-primary {
+    background: var(--primary);
+    color: #fff;
+  }
+  .btn-primary:hover { background: var(--primary-hover); }
+  .btn-ghost {
+    background: transparent;
+    color: var(--text-secondary);
+    border: 1px solid var(--border);
+  }
+  .btn-ghost:hover { background: var(--bg); color: var(--text); }
+  .btn-icon {
+    padding: 8px; border-radius: 50%;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    color: var(--text-secondary);
+    font-size: 18px;
+    transition: all 0.15s;
+  }
+  .btn-icon:hover { background: var(--bg); color: var(--text); }
+  .btn-danger {
+    background: transparent;
+    color: var(--primary);
+    border: 1px solid var(--primary);
+  }
+  .btn-danger:hover { background: var(--primary-light); }
+
+  /* Modal */
+  .modal-overlay {
+    position: fixed; inset: 0; z-index: 1000;
+    background: rgba(0,0,0,0.5);
+    backdrop-filter: blur(6px);
+    display: none; align-items: center; justify-content: center;
+    padding: 20px;
+  }
+  .modal-overlay.show { display: flex; }
+  .modal {
+    width: 540px; max-width: 100%;
+    background: var(--card-bg);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-hover);
+    padding: 32px 32px 24px;
+    animation: modalIn 0.2s ease;
+  }
+  @keyframes modalIn {
+    from { opacity: 0; transform: translateY(20px) scale(0.96); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+  }
+  .modal-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 24px;
+  }
+  .modal-header h3 {
+    font-size: 20px; font-weight: 700;
+  }
+  .modal-close {
+    background: none; border: none;
+    font-size: 22px; color: var(--text-tertiary);
+    cursor: pointer; padding: 4px; line-height: 1;
+    border-radius: 50%;
+    transition: all 0.15s;
+  }
+  .modal-close:hover { background: var(--bg); color: var(--text); }
+  .modal-body { margin-bottom: 20px; }
+  .form-group { margin-bottom: 18px; }
+  .form-group label {
+    display: block;
+    font-size: 13px; font-weight: 600;
+    color: var(--text-secondary);
+    margin-bottom: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+  }
+  .form-group input, .form-group textarea, .form-group select {
+    width: 100%; padding: 12px 14px;
+    border: 2px solid var(--border);
+    border-radius: var(--radius-xs);
+    font-family: var(--font); font-size: 14px;
+    background: var(--card-bg);
+    color: var(--text);
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+  .form-group input:focus, .form-group textarea:focus, .form-group select:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 4px var(--primary-glow);
+  }
+  .form-group textarea {
+    min-height: 120px; resize: vertical;
+    line-height: 1.6;
+  }
+  .form-group select {
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' fill='%236B6B6B'%3E%3Cpath d='M1 1l5 5 5-5'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 14px center;
+    padding-right: 36px;
+  }
+  .mood-picker {
+    display: flex; gap: 10px; flex-wrap: wrap;
+  }
+  .mood-option {
+    padding: 8px 16px;
+    border: 2px solid var(--border);
+    border-radius: 20px;
+    font-size: 13px; font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s;
+    background: transparent;
+    color: var(--text-secondary);
+    font-family: var(--font);
+  }
+  .mood-option:hover { border-color: var(--text-secondary); }
+  .mood-option.selected {
+    border-color: var(--primary);
+    background: var(--primary-light);
+    color: var(--primary);
+  }
+  .modal-footer {
+    display: flex; gap: 10px; justify-content: flex-end;
+    padding-top: 4px;
+  }
+
+  /* Detail View */
+  .detail-overlay {
+    position: fixed; inset: 0; z-index: 1001;
+    background: rgba(0,0,0,0.5);
+    backdrop-filter: blur(6px);
+    display: none; align-items: center; justify-content: center;
+    padding: 20px;
+  }
+  .detail-overlay.show { display: flex; }
+  .detail-modal {
+    width: 600px; max-width: 100%; max-height: 80vh;
+    background: var(--card-bg);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-hover);
+    padding: 32px;
+    overflow-y: auto;
+    animation: modalIn 0.2s ease;
+  }
+  .detail-mood-line {
+    display: flex; align-items: center; gap: 12px;
+    margin-bottom: 16px;
+  }
+  .detail-mood-badge {
+    padding: 4px 14px;
+    border-radius: 16px;
+    font-size: 13px; font-weight: 600;
+    text-transform: capitalize;
+  }
+  .detail-date {
+    font-size: 14px; color: var(--text-tertiary);
+  }
+  .detail-title {
+    font-size: 26px; font-weight: 800;
+    margin-bottom: 8px;
+    letter-spacing: -0.3px;
+  }
+  .detail-tags {
+    display: flex; gap: 6px; flex-wrap: wrap;
+    margin-bottom: 20px;
+  }
+  .detail-content {
+    font-size: 15px; line-height: 1.8;
+    color: var(--text-secondary);
+    white-space: pre-wrap;
+  }
+  .detail-actions {
+    display: flex; gap: 8px;
+    margin-top: 24px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border);
+  }
+
+  /* Empty State */
+  .empty-state {
+    text-align: center; padding: 60px 20px;
+    color: var(--text-tertiary);
+  }
+  .empty-state .icon { font-size: 56px; margin-bottom: 16px; opacity: 0.5; }
+  .empty-state h3 { font-size: 18px; color: var(--text-secondary); margin-bottom: 6px; }
+  .empty-state p { font-size: 14px; }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--text-tertiary); }
+
+  /* Responsive */
+  @media (max-width: 768px) {
+    .sidebar { display: none; }
+    .main { padding: 24px 16px 80px; }
+    .main-header { flex-direction: column; align-items: flex-start; gap: 12px; }
+    .main-header h2 { font-size: 24px; }
+    .stats-bar { grid-template-columns: repeat(2, 1fr); }
+    .stat-card .num { font-size: 22px; }
+    .dream-card { padding: 18px 20px; }
+    .modal, .detail-modal { padding: 24px 20px; }
+  }
+
+  /* Mobile nav toggle */
+  .mobile-nav-btn { display: none; }
+  @media (max-width: 768px) {
+    .mobile-nav-btn { display: flex; }
+    .sidebar.mobile-open {
+      display: flex;
+      position: fixed; inset: 0; z-index: 500;
+      width: 100%; min-width: 100%;
+      border-right: none;
+    }
+  }
+</style>
+</head>
+<body>
+
+<!-- Password Gate -->
+<div id="gate">
+  <div class="gate-box">
+    <div class="gate-icon">&#x1F31B;</div>
+    <h1>Dream Journal</h1>
+    <p>Enter your password to unlock your dreams</p>
+    <input type="password" id="passInput" placeholder="Password" autofocus>
+    <div class="error" id="passError">Incorrect password. Try again.</div>
+    <button class="gate-btn" onclick="unlock()">Unlock</button>
+  </div>
+</div>
+
+<!-- App -->
+<div id="app">
+  <!-- Sidebar -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo">
+      <span class="dot"></span>
+      Dream Journal
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-item active" onclick="switchView('all')">
+        <span>&#x1F4AD;</span> All Dreams
+        <span class="badge" id="allCount">0</span>
+      </div>
+      <div class="nav-item" onclick="switchView('recent')">
+        <span>&#x1F31F;</span> Recent
+        <span class="badge" id="recentBadge">7d</span>
+      </div>
+      <div class="nav-divider"></div>
+      <div class="nav-item" onclick="filterByMood('happy')">
+        <span>&#x1F31E;</span> Happy
+      </div>
+      <div class="nav-item" onclick="filterByMood('lucid')">
+        <span>&#x1F30C;</span> Lucid
+      </div>
+      <div class="nav-item" onclick="filterByMood('weird')">
+        <span>&#x1F300;</span> Weird
+      </div>
+      <div class="nav-item" onclick="filterByMood('dark')">
+        <span>&#x1F319;</span> Dark
+      </div>
+      <div class="nav-item" onclick="filterByMood('scary')">
+        <span>&#x1F628;</span> Scary
+      </div>
+      <div class="nav-item" onclick="filterByMood('neutral')">
+        <span>&#x1F30A;</span> Neutral
+      </div>
+    </nav>
+    <div class="theme-toggle" onclick="toggleTheme()">
+      <span id="themeIcon">&#x1F319;</span>
+      <span id="themeLabel">Dark Mode</span>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <div class="main">
+    <div class="main-header">
+      <div>
+        <div style="display:flex;align-items:center;gap:12px;">
+          <button class="btn-icon mobile-nav-btn" onclick="toggleMobileNav()" style="font-size:20px;">&#x2630;</button>
+          <h2 id="viewTitle">All Dreams</h2>
+        </div>
+        <div class="subtitle" id="viewSubtitle">Every dream you've ever recorded</div>
+      </div>
+      <div class="main-actions">
+        <button class="btn btn-primary" onclick="openNewDream()">+ New Dream</button>
+      </div>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats-bar">
+      <div class="stat-card">
+        <div class="num" id="statTotal">0</div>
+        <div class="label">Total Dreams</div>
+      </div>
+      <div class="stat-card">
+        <div class="num" id="statThisMonth">0</div>
+        <div class="label">This Month</div>
+      </div>
+      <div class="stat-card">
+        <div class="num" id="statStreak">0</div>
+        <div class="label">Day Streak</div>
+      </div>
+      <div class="stat-card">
+        <div class="num" id="statLucidity">0%</div>
+        <div class="label">Lucidity Rate</div>
+      </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="filters" id="filters">
+      <button class="filter-chip active" onclick="setFilter('all', this)">All</button>
+      <button class="filter-chip" onclick="setFilter('happy', this)">&#x1F31E; Happy</button>
+      <button class="filter-chip" onclick="setFilter('lucid', this)">&#x1F30C; Lucid</button>
+      <button class="filter-chip" onclick="setFilter('weird', this)">&#x1F300; Weird</button>
+      <button class="filter-chip" onclick="setFilter('dark', this)">&#x1F319; Dark</button>
+      <button class="filter-chip" onclick="setFilter('scary', this)">&#x1F628; Scary</button>
+      <button class="filter-chip" onclick="setFilter('neutral', this)">&#x1F30A; Neutral</button>
+    </div>
+
+    <!-- Dream List -->
+    <div class="dreams-list" id="dreamsList"></div>
+  </div>
+</div>
+
+<!-- New/Edit Dream Modal -->
+<div class="modal-overlay" id="dreamModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 id="modalTitle">New Dream</h3>
+      <button class="modal-close" onclick="closeModal()">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label>Title</label>
+        <input type="text" id="dreamTitle" placeholder="Give your dream a title...">
+      </div>
+      <div class="form-group">
+        <label>Date</label>
+        <input type="date" id="dreamDate">
+      </div>
+      <div class="form-group">
+        <label>Mood</label>
+        <div class="mood-picker" id="moodPicker">
+          <button class="mood-option" data-mood="happy" onclick="selectMood('happy')">&#x1F31E; Happy</button>
+          <button class="mood-option" data-mood="lucid" onclick="selectMood('lucid')">&#x1F30C; Lucid</button>
+          <button class="mood-option" data-mood="weird" onclick="selectMood('weird')">&#x1F300; Weird</button>
+          <button class="mood-option" data-mood="dark" onclick="selectMood('dark')">&#x1F319; Dark</button>
+          <button class="mood-option" data-mood="scary" onclick="selectMood('scary')">&#x1F628; Scary</button>
+          <button class="mood-option selected" data-mood="neutral" onclick="selectMood('neutral')">&#x1F30A; Neutral</button>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Tags</label>
+        <input type="text" id="dreamTags" placeholder="flying, ocean, childhood, ... (comma separated)">
+      </div>
+      <div class="form-group">
+        <label>Dream</label>
+        <textarea id="dreamContent" placeholder="Describe your dream in detail..."></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="saveDream()">Save Dream</button>
+    </div>
+  </div>
+</div>
+
+<!-- Dream Detail -->
+<div class="detail-overlay" id="detailModal">
+  <div class="detail-modal">
+    <div class="detail-mood-line">
+      <span class="detail-mood-badge" id="detailMoodBadge">&#x1F31E; Happy</span>
+      <span class="detail-date" id="detailDate">Jan 1, 2026</span>
+    </div>
+    <h2 class="detail-title" id="detailTitle">Dream Title</h2>
+    <div class="detail-tags" id="detailTags"></div>
+    <div class="detail-content" id="detailContent"></div>
+    <div class="detail-actions">
+      <button class="btn btn-ghost" onclick="editFromDetail()">Edit</button>
+      <button class="btn btn-danger" onclick="deleteFromDetail()">Delete</button>
+      <button class="btn btn-primary" style="margin-left:auto;" onclick="closeDetail()">Close</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ===== DATA =====
+const STORAGE_KEY = 'dream_journal_entries';
+const THEME_KEY = 'dream_journal_theme';
+const CORRECT_PASSWORD='aimn';
+
+let dreams = [];
+let currentFilter = 'all';
+let currentMoodFilter = null;
+let editingId = null;
+let viewingId = null;
+let selectedMood = 'neutral';
+
+const MOOD_EMOJIS = {
+  happy: '\u{1F31E}',
+  lucid: '\u{1F30C}',
+  weird: '\u{1F300}',
+  dark: '\u{1F319}',
+  scary: '\u{1F628}',
+  neutral: '\u{1F30A}'
+};
+
+// ===== SAMPLE DREAMS =====
+const SAMPLE_DREAMS = [
+  {
+    id: 's1',
+    title: 'Flying Over the City at Dawn',
+    date: '2026-05-28',
+    mood: 'lucid',
+    tags: ['flying', 'city', 'sunrise', 'freedom'],
+    content: 'I was standing on the edge of a rooftop when I realized I could fly. Not flapping — just leaning forward and the air caught me. The city stretched below like a circuit board, all glittering lights fading into the pink-orange dawn. I flew between skyscrapers, my fingers brushing glass facades. I knew I was dreaming but I didn\'t wake up — I just kept going, faster, until the buildings blurred into streaks of light. When I finally opened my eyes, I could still feel the wind on my face.'
+  },
+  {
+    id: 's2',
+    title: 'The Library Without End',
+    date: '2026-05-15',
+    mood: 'weird',
+    tags: ['library', 'infinite', 'books', 'knowledge'],
+    content: 'A labyrinth of bookshelves stretching infinitely in every direction. The ceiling was made of stained glass depicting constellations that moved. Every book I pulled out was about my own life — memories I\'d forgotten, conversations I never had but wished I did. I found a book that was completely blank except for the next page, where it slowly wrote: "You are reading this right now." I closed it and the shelf behind me had disappeared, replaced by a corridor that led to a room full of mirrors.'
+  },
+  {
+    id: 's3',
+    title: 'Drowning in Honey',
+    date: '2026-05-08',
+    mood: 'dark',
+    tags: ['water', 'sensation', 'golden', 'slow'],
+    content: 'I was swimming through a sea of warm honey. It was golden and translucent, and the light filtered through it like stained glass. At first it was peaceful — the sweetness, the warmth — but then I realized I couldn\'t reach the surface. I was suspended in amber, moving in slow motion, my lungs filling with something thick and sweet. I wasn\'t panicked. I was resigned. The last thing I saw was a giant bee hovering above the surface, watching me with compound eyes that reflected my own face back at me.'
+  },
+  {
+    id: 's4',
+    title: 'Conversation with a Shadow',
+    date: '2026-04-29',
+    mood: 'scary',
+    tags: ['shadow', 'conversation', 'mirror', 'darker'],
+    content: 'I was sitting in a room that was exactly my bedroom, but mirrored — everything on the wrong side. My reflection wasn\'t mimicking me. It was sitting on the edge of my bed, elbows on its knees, looking at me like it had been waiting. It spoke in my voice but lower, slower, like the tape was dragging. It said: "You only come here when you\'re running. One day you\'ll stay." I tried to wake up but I couldn\'t — I just sat there, watching my shadow-self smile at me in the dark.'
+  },
+  {
+    id: 's5',
+    title: 'Running Through an Endless Forest',
+    date: '2026-04-18',
+    mood: 'happy',
+    tags: ['forest', 'running', 'trees', 'moonlight'],
+    content: 'I was running through a forest at night, but the moonlight was so bright everything glowed silver-blue. The trees were enormous — trunks wider than cars, roots rippling through the earth like veins. I wasn\'t running from anything. I was just… running. The air tasted like pine and cold water. Every breath felt electric. I jumped over a stream and landed on the other side, and the forest opened into a clearing full of fireflies that pulsed in rhythm like a heartbeat. I woke up smiling.'
+  },
+  {
+    id: 's6',
+    title: 'The Clockmaker\'s Workshop',
+    date: '2026-04-07',
+    mood: 'neutral',
+    tags: ['clocks', 'workshop', 'time', 'gears'],
+    content: 'I was in a dusty workshop filled with clocks — wall clocks, pocket watches, grandfather clocks, all ticking at slightly different tempos. The old clockmaker had his back to me, hunched over a tiny golden watch. He said without turning: "Time isn\'t linear. It just looks that way because you\'re living inside it." He handed me a watch with no hands. "This one runs on memory. Wind it carefully." When I took it, all the other clocks stopped at once. The silence was louder than the ticking.'
+  }
+];
+
+// ===== THEME =====
+function loadTheme() {
+  const saved = localStorage.getItem(THEME_KEY);
+  if (saved === 'dark') {
+    document.documentElement.setAttribute('data-theme', 'dark');
+    document.getElementById('themeIcon').textContent = '\u{2600}\uFE0F';
+    document.getElementById('themeLabel').textContent = 'Light Mode';
+  } else {
+    document.documentElement.removeAttribute('data-theme');
+    document.getElementById('themeIcon').textContent = '\u{1F319}';
+    document.getElementById('themeLabel').textContent = 'Dark Mode';
+  }
+}
+function toggleTheme() {
+  const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+  localStorage.setItem(THEME_KEY, isDark ? 'light' : 'dark');
+  loadTheme();
+}
+
+// ===== PASSWORD =====
+function unlock() {
+  const val = document.getElementById('passInput').value;
+  if (val === CORRECT_PASSWORD) {
+    document.getElementById('gate').classList.add('hidden');
+    document.getElementById('app').classList.add('active');
+    init();
+  } else {
+    document.getElementById('passError').classList.add('show');
+    document.getElementById('passInput').value = '';
+    document.getElementById('passInput').focus();
+  }
+}
+document.getElementById('passInput').addEventListener('keydown', e => {
+  if (e.key === 'Enter') unlock();
+});
+
+// ===== INIT =====
+function init() {
+  loadTheme();
+  loadDreams();
+  renderAll();
+}
+
+function loadDreams() {
+  const stored = localStorage.getItem(STORAGE_KEY);
+  if (stored) {
+    dreams = JSON.parse(stored);
+  } else {
+    dreams = [...SAMPLE_DREAMS];
+    saveDreams();
+  }
+}
+
+function saveDreams() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(dreams));
+}
+
+// ===== CRUD =====
+function getToday() {
+  return new Date().toISOString().split('T')[0];
+}
+
+function formatDate(dateStr) {
+  const d = new Date(dateStr + 'T12:00:00');
+  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+}
+
+function openNewDream() {
+  editingId = null;
+  selectedMood = 'neutral';
+  document.getElementById('modalTitle').textContent = 'New Dream';
+  document.getElementById('dreamTitle').value = '';
+  document.getElementById('dreamDate').value = getToday();
+  document.getElementById('dreamContent').value = '';
+  document.getElementById('dreamTags').value = '';
+  document.querySelectorAll('.mood-option').forEach(el => {
+    el.classList.toggle('selected', el.dataset.mood === 'neutral');
+  });
+  document.getElementById('dreamModal').classList.add('show');
+  setTimeout(() => document.getElementById('dreamTitle').focus(), 200);
+}
+
+function openEditDream(id) {
+  const dream = dreams.find(d => d.id === id);
+  if (!dream) return;
+  editingId = id;
+  selectedMood = dream.mood;
+  document.getElementById('modalTitle').textContent = 'Edit Dream';
+  document.getElementById('dreamTitle').value = dream.title;
+  document.getElementById('dreamDate').value = dream.date;
+  document.getElementById('dreamContent').value = dream.content;
+  document.getElementById('dreamTags').value = (dream.tags || []).join(', ');
+  document.querySelectorAll('.mood-option').forEach(el => {
+    el.classList.toggle('selected', el.dataset.mood === dream.mood);
+  });
+  document.getElementById('dreamModal').classList.add('show');
+}
+
+function closeModal() {
+  document.getElementById('dreamModal').classList.remove('show');
+  editingId = null;
+}
+
+function selectMood(mood) {
+  selectedMood = mood;
+  document.querySelectorAll('.mood-option').forEach(el => {
+    el.classList.toggle('selected', el.dataset.mood === mood);
+  });
+}
+
+function saveDream() {
+  const title = document.getElementById('dreamTitle').value.trim();
+  const date = document.getElementById('dreamDate').value;
+  const content = document.getElementById('dreamContent').value.trim();
+  const tagsRaw = document.getElementById('dreamTags').value.trim();
+
+  if (!title) { alert('Please give your dream a title.'); return; }
+  if (!content) { alert('Please describe your dream.'); return; }
+
+  const tags = tagsRaw ? tagsRaw.split(',').map(t => t.trim().toLowerCase()).filter(t => t) : [];
+
+  if (editingId) {
+    const idx = dreams.findIndex(d => d.id === editingId);
+    if (idx !== -1) {
+      dreams[idx] = { ...dreams[idx], title, date, mood: selectedMood, tags, content };
+    }
+  } else {
+    const dream = {
+      id: 'd' + Date.now(),
+      title,
+      date,
+      mood: selectedMood,
+      tags,
+      content
+    };
+    dreams.unshift(dream);
+  }
+  saveDreams();
+  closeModal();
+  renderAll();
+}
+
+function deleteDream(id) {
+  if (!confirm('Delete this dream forever?')) return;
+  dreams = dreams.filter(d => d.id !== id);
+  saveDreams();
+  renderAll();
+  closeDetail();
+}
+
+// ===== VIEW/DETAIL =====
+function openDetail(id) {
+  viewingId = id;
+  const dream = dreams.find(d => d.id === id);
+  if (!dream) return;
+
+  document.getElementById('detailTitle').textContent = dream.title;
+  document.getElementById('detailDate').textContent = formatDate(dream.date);
+
+  const badge = document.getElementById('detailMoodBadge');
+  badge.textContent = (MOOD_EMOJIS[dream.mood] || '') + ' ' + dream.mood.charAt(0).toUpperCase() + dream.mood.slice(1);
+  badge.style.background = getMoodBg(dream.mood);
+  badge.style.color = getMoodFg(dream.mood);
+
+  const tagsEl = document.getElementById('detailTags');
+  tagsEl.innerHTML = (dream.tags || []).map(t => `<span class="dream-tag">${t}</span>`).join('');
+
+  document.getElementById('detailContent').textContent = dream.content;
+  document.getElementById('detailModal').classList.add('show');
+}
+
+function getMoodBg(mood) {
+  const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+  const map = {
+    happy: isDark ? '#451A03' : '#FEF3C7',
+    lucid: isDark ? '#0A3D2E' : '#D1FAE5',
+    weird: isDark ? '#4C1D3E' : '#FCE7F3',
+    dark: isDark ? '#2E1E5E' : '#EDE9FE',
+    scary: isDark ? '#4C1D1D' : '#FEE2E2',
+    neutral: isDark ? '#1E3A5F' : '#DBEAFE'
+  };
+  return map[mood] || (isDark ? '#2A2A2A' : '#F3F4F6');
+}
+function getMoodFg(mood) {
+  const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+  const map = {
+    happy: isDark ? '#FBBF24' : '#92400E',
+    lucid: isDark ? '#34D399' : '#065F46',
+    weird: isDark ? '#F472B6' : '#9D174D',
+    dark: isDark ? '#A78BFA' : '#5B21B6',
+    scary: isDark ? '#F87171' : '#991B1B',
+    neutral: isDark ? '#60A5FA' : '#1E40AF'
+  };
+  return map[mood] || (isDark ? '#9A9A9A' : '#4B5563');
+}
+
+function closeDetail() {
+  document.getElementById('detailModal').classList.remove('show');
+  viewingId = null;
+}
+
+function editFromDetail() {
+  if (viewingId) {
+    closeDetail();
+    openEditDream(viewingId);
+  }
+}
+
+function deleteFromDetail() {
+  if (viewingId) {
+    const id = viewingId;
+    closeDetail();
+    deleteDream(id);
+  }
+}
+
+// ===== RENDER =====
+function renderAll() {
+  updateStats();
+  updateCounts();
+  renderDreams();
+}
+
+function getFilteredDreams() {
+  let filtered = [...dreams];
+
+  if (currentFilter !== 'all') {
+    if (currentFilter === 'recent') {
+      const weekAgo = new Date();
+      weekAgo.setDate(weekAgo.getDate() - 7);
+      filtered = filtered.filter(d => new Date(d.date + 'T12:00:00') >= weekAgo);
+    } else {
+      filtered = filtered.filter(d => d.mood === currentFilter);
+    }
+  }
+
+  return filtered.sort((a, b) => new Date(b.date + 'T12:00:00') - new Date(a.date + 'T12:00:00'));
+}
+
+function renderDreams() {
+  const filtered = getFilteredDreams();
+  const container = document.getElementById('dreamsList');
+
+  if (filtered.length === 0) {
+    container.innerHTML = `
+      <div class="empty-state">
+        <div class="icon">&#x1F31B;</div>
+        <h3>No dreams yet</h3>
+        <p>Start recording your dreams by tapping "New Dream"</p>
+      </div>
+    `;
+    return;
+  }
+
+  container.innerHTML = filtered.map(d => `
+    <div class="dream-card mood-${d.mood}" data-mood="${d.mood}" onclick="openDetail('${d.id}')">
+      <div class="dream-card-header">
+        <div class="dream-card-title">${escapeHtml(d.title)}</div>
+        <div class="dream-card-date">${formatDate(d.date)}</div>
+      </div>
+      <div class="dream-card-content">${escapeHtml(d.content)}</div>
+      <div class="dream-card-tags">
+        <span class="dream-mood-tag">${MOOD_EMOJIS[d.mood] || ''} ${d.mood}</span>
+        ${(d.tags || []).slice(0, 3).map(t => `<span class="dream-tag">${escapeHtml(t)}</span>`).join('')}
+        ${(d.tags || []).length > 3 ? `<span class="dream-tag">+${(d.tags || []).length - 3}</span>` : ''}
+      </div>
+    </div>
+  `).join('');
+}
+
+function escapeHtml(text) {
+  const d = document.createElement('div');
+  d.textContent = text;
+  return d.innerHTML;
+}
+
+// ===== STATS =====
+function updateStats() {
+  document.getElementById('statTotal').textContent = dreams.length;
+
+  const now = new Date();
+  const thisMonth = dreams.filter(d => {
+    const date = new Date(d.date + 'T12:00:00');
+    return date.getMonth() === now.getMonth() && date.getFullYear() === now.getFullYear();
+  });
+  document.getElementById('statThisMonth').textContent = thisMonth.length;
+
+  // Streak
+  let streak = 0;
+  const sorted = [...dreams].sort((a, b) => new Date(b.date + 'T12:00:00') - new Date(a.date + 'T12:00:00'));
+  const uniqueDates = [...new Set(sorted.map(d => d.date))].sort().reverse();
+  const checkDate = new Date();
+  for (let i = 0; i < uniqueDates.length; i++) {
+    const d = new Date(uniqueDates[i] + 'T12:00:00');
+    const diff = Math.round((checkDate - d) / (1000 * 60 * 60 * 24));
+    if (diff === streak) {
+      streak++;
+    } else {
+      break;
+    }
+  }
+  document.getElementById('statStreak').textContent = streak;
+
+  // Lucidity rate
+  const lucidCount = dreams.filter(d => d.mood === 'lucid').length;
+  document.getElementById('statLucidity').textContent = dreams.length > 0
+    ? Math.round((lucidCount / dreams.length) * 100) + '%'
+    : '0%';
+}
+
+function updateCounts() {
+  document.getElementById('allCount').textContent = dreams.length;
+}
+
+// ===== NAVIGATION =====
+function switchView(view) {
+  currentFilter = view;
+  currentMoodFilter = null;
+  document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.filter-chip').forEach(el => el.classList.remove('active'));
+  document.querySelector('.filter-chip:first-child').classList.add('active');
+
+  // Highlight sidebar
+  const labels = {
+    all: 'All Dreams',
+    recent: 'Recent'
+  };
+  document.querySelectorAll('.nav-item').forEach(el => {
+    if (el.textContent.trim().includes(labels[view])) el.classList.add('active');
+  });
+
+  const titles = {
+    all: 'All Dreams',
+    recent: 'Past 7 Days'
+  };
+  document.getElementById('viewTitle').textContent = titles[view] || 'Dreams';
+  document.getElementById('viewSubtitle').textContent = view === 'all'
+    ? 'Every dream you\'ve ever recorded'
+    : 'Dreams from the last week';
+  document.getElementById('sidebar').classList.remove('mobile-open');
+
+  renderDreams();
+}
+
+function filterByMood(mood) {
+  currentFilter = mood;
+  document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.filter-chip').forEach(el => el.classList.remove('active'));
+
+  const moodLabels = { happy: 'Happy', lucid: 'Lucid', weird: 'Weird', dark: 'Dark', scary: 'Scary', neutral: 'Neutral' };
+  document.querySelectorAll('.nav-item').forEach(el => {
+    if (el.textContent.trim().includes(moodLabels[mood])) el.classList.add('active');
+  });
+
+  document.getElementById('viewTitle').textContent = moodLabels[mood] + ' Dreams';
+  document.getElementById('viewSubtitle').textContent = `${dreams.filter(d => d.mood === mood).length} dream${dreams.filter(d => d.mood === mood).length !== 1 ? 's' : ''}`;
+  document.getElementById('sidebar').classList.remove('mobile-open');
+  renderDreams();
+}
+
+function setFilter(filter, el) {
+  currentFilter = filter;
+  document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  renderDreams();
+}
+
+function toggleMobileNav() {
+  document.getElementById('sidebar').classList.toggle('mobile-open');
+}
+
+// Close modals on overlay click
+document.getElementById('dreamModal').addEventListener('click', e => {
+  if (e.target === e.currentTarget) closeModal();
+});
+document.getElementById('detailModal').addEventListener('click', e => {
+  if (e.target === e.currentTarget) closeDetail();
+});
+
+// Keyboard shortcuts
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') {
+    closeModal();
+    closeDetail();
+  }
+});
+</script>
+</body>
+</html>

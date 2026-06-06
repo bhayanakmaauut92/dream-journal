@@ -337,6 +337,58 @@
     text-align: center;
   }
 
+  /* Conversation Tree */
+  .conv-tree {
+    display: flex; flex-direction: column; align-items: center; gap: 0;
+    padding: 20px 0;
+  }
+  .tree-node {
+    width: 100%; max-width: 520px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-left: 4px solid var(--gold);
+    border-radius: var(--radius-sm);
+    padding: 20px 24px;
+    position: relative;
+    transition: box-shadow 0.2s;
+  }
+  .tree-node:hover { box-shadow: 0 4px 20px rgba(0,0,0,0.3); }
+  .tree-phase {
+    font-size: 16px; font-weight: 700;
+    margin-bottom: 4px;
+    color: var(--text);
+  }
+  .tree-tag {
+    font-size: 12px; font-weight: 600;
+    margin-bottom: 10px;
+  }
+  .tree-desc {
+    font-size: 13px; line-height: 1.6;
+    color: var(--text-secondary);
+  }
+  .tree-link {
+    font-size: 12px; font-weight: 500;
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px solid var(--border);
+    color: var(--gold-dim);
+  }
+  .tree-question {
+    font-size: 13px; font-style: italic;
+    color: var(--text-muted);
+    text-align: center;
+    padding: 14px 20px;
+    max-width: 480px;
+    background: rgba(255, 215, 0, 0.03);
+    border: 1px dashed var(--border);
+    border-radius: var(--radius-sm);
+  }
+  .tree-arrow {
+    font-size: 14px; color: var(--text-muted);
+    padding: 6px 0;
+    text-align: center;
+  }
+
   /* Mobile */
   @media (max-width: 768px) {
     .layout { flex-direction: column; padding: 16px; }
@@ -381,8 +433,8 @@
     </div>
     <div class="header-right">
       <div class="header-stats">
-        <span><strong>5</strong> reports</span>
-        <span><strong>Jun 2–5</strong></span>
+        <span><strong>8</strong> items</span>
+        <span><strong>Jun 2–6</strong></span>
       </div>
     </div>
   </div>
@@ -390,43 +442,56 @@
   <div class="layout">
     <!-- Sidebar -->
     <div class="sidebar">
-      <div class="sidebar-label">Sessions</div>
       <div class="sidebar-nav" id="sidebar-nav">
+        <div class="sidebar-label" style="margin-top:0;">Sessions</div>
         <div class="sidebar-item active" data-report="jun2-morning" onclick="switchReport('jun2-morning')">
           <span class="dot success"></span>
-          June 2
+          Jun 2
           <span class="badge">morning</span>
         </div>
         <div class="sidebar-item" data-report="jun2-evening" onclick="switchReport('jun2-evening')">
           <span class="dot success"></span>
-          June 2
+          Jun 2
           <span class="badge">evening</span>
         </div>
         <div class="sidebar-item" data-report="jun3" onclick="switchReport('jun3')">
           <span class="dot fail"></span>
-          June 3
+          Jun 3
           <span class="badge">failed</span>
         </div>
         <div class="sidebar-item" data-report="jun4" onclick="switchReport('jun4')">
           <span class="dot fail"></span>
-          June 4
+          Jun 4
           <span class="badge">failed</span>
         </div>
         <div class="sidebar-item" data-report="jun5" onclick="switchReport('jun5')">
           <span class="dot success"></span>
-          June 5
+          Jun 5
           <span class="badge">morning</span>
         </div>
-        <div style="height:1px;background:var(--border);margin:8px 0;"></div>
+
+        <div class="sidebar-label">References</div>
         <div class="sidebar-item" data-report="counter-argument" onclick="switchReport('counter-argument')">
           <span class="dot" style="background:#ef4444"></span>
           Reality Check
-          <span class="badge">ref</span>
+          <span class="badge">corrects</span>
         </div>
         <div class="sidebar-item" data-report="playbook" onclick="switchReport('playbook')">
-          <span class="dot" style="background:#22c55e"></span>
+          <span class="dot" style="background:#f59e0b"></span>
           Playbook
           <span class="badge">guide</span>
+        </div>
+        <div class="sidebar-item" data-report="multi-account" onclick="switchReport('multi-account')">
+          <span class="dot" style="background:#a855f7"></span>
+          Multi-Account
+          <span class="badge">corrected</span>
+        </div>
+
+        <div class="sidebar-label">Map</div>
+        <div class="sidebar-item" data-report="conversation-map" onclick="switchReport('conversation-map')">
+          <span class="dot" style="background:#3b82f6"></span>
+          Conversation Map
+          <span class="badge">tree</span>
         </div>
       </div>
     </div>
@@ -503,6 +568,90 @@
           <div class="report-status success">guide</div>
         </div>
         <div class="report-content" id="content-playbook">Loading...</div>
+      </div>
+
+      <!-- Multi-Account Strategy -->
+      <div class="report" id="report-multi-account">
+        <div class="report-meta">
+          <div class="report-date">Multi-Account Strategy</div>
+          <div class="report-status fail">corrected</div>
+        </div>
+        <div class="report-content" id="content-multi-account">Loading...</div>
+      </div>
+
+      <!-- Conversation Map -->
+      <div class="report" id="report-conversation-map">
+        <div class="report-meta">
+          <div class="report-date">Conversation Map</div>
+          <div class="report-status success">tree</div>
+        </div>
+        <div class="report-content" id="content-conversation-map">
+          <div class="conv-tree">
+            <div class="tree-node" style="border-left-color:var(--gold);">
+              <div class="tree-phase">Dream Session Reports</div>
+              <div class="tree-desc">AI-generated strategic thinking sessions for AIMN. Runs daily via cron. Numbers and strategies are speculative — the model makes things up.</div>
+            </div>
+
+            <div class="tree-arrow">▼</div>
+            <div class="tree-line"></div>
+
+            <div class="tree-question">"When you mention the 5M math for views for AIMN how do people actually achieve that?"</div>
+
+            <div class="tree-arrow">▼</div>
+            <div class="tree-line"></div>
+
+            <div class="tree-node" style="border-left-color:#ef4444;">
+              <div class="tree-phase">Reality Check</div>
+              <div class="tree-tag" style="color:#ef4444;">← Corrects dream session numbers</div>
+              <div class="tree-desc">Researched real case studies (TBPN, Cold Fusion, AI Breakdown) and TubeBuddy/vidIQ data. Found the 5M/90 days target is top 0.1% — median new channel gets ~2K views. Documented the actual tool stack (Opus Clip, Repurpose.io, etc.) and realistic benchmarks.</div>
+              <div class="tree-link">→ Opens in sidebar under <strong>References</strong></div>
+            </div>
+
+            <div class="tree-arrow">▼</div>
+            <div class="tree-line"></div>
+
+            <div class="tree-question">"Is there a tool to dump recordings into that auto-posts clips to different accounts?"</div>
+
+            <div class="tree-arrow">▼</div>
+            <div class="tree-line"></div>
+
+            <div class="tree-node" style="border-left-color:#f59e0b;">
+              <div class="tree-phase">Playbook</div>
+              <div class="tree-tag" style="color:#f59e0b;">← Tool recommendations + budgets</div>
+              <div class="tree-desc">Researched Opus Clip, Spikes Studio, Klap, Repurpose.io. Built pipeline diagrams, pricing comparisons ($78-$1,058/mo), VA workflow, and a week-by-week action plan. Included a multi-account analysis and decision tree.</div>
+              <div class="tree-link">→ Opens in sidebar under <strong>References</strong></div>
+            </div>
+
+            <div class="tree-arrow">▼</div>
+            <div class="tree-line"></div>
+
+            <div class="tree-question">"What's the easiest way to get 20-25 YouTube Shorts accounts that work and are legit?"</div>
+
+            <div class="tree-arrow">▼</div>
+            <div class="tree-line"></div>
+
+            <div class="tree-node" style="border-left-color:#a855f7;">
+              <div class="tree-phase">Multi-Account Strategy</div>
+              <div class="tree-tag" style="color:#a855f7;">⬆ Raises new question → leads to correction</div>
+              <div class="tree-desc">I suggested using brand accounts. You asked about audio fingerprinting. I said clips with same audio would get flagged. You pushed back citing JRE/Theo Von clip channels. I researched properly and found I was wrong — Content ID doesn't work on speech, hosts permit clip channels, and the real model is "burn & churn" with 3-12 month channel lifespans.</div>
+              <div class="tree-link">→ Opens in sidebar under <strong>References</strong></div>
+            </div>
+
+            <div class="tree-arrow">▼</div>
+            <div class="tree-line"></div>
+
+            <div class="tree-question">"Then how do these Joe Rogan clipping channels get so many views, do real research"</div>
+
+            <div class="tree-arrow">▼</div>
+            <div class="tree-line"></div>
+
+            <div class="tree-node" style="border-left-color:#3b82f6;">
+              <div class="tree-phase">This Page: Conversation Map</div>
+              <div class="tree-tag" style="color:#3b82f6;">← You are here</div>
+              <div class="tree-desc">The full conversation flow. Each research document was created in response to a question. Corrections are visually marked. No information is lost in chat history.</div>
+            </div>
+          </div>
+        </div>
       </div>
 
     </div>
@@ -630,7 +779,8 @@ async function loadReports() {
     'jun2-evening': 'reports/2026-06-02_evening.md',
     'jun5': 'reports/2026-06-05.md',
     'counter-argument': 'reports/counter-argument.md',
-    'playbook': 'reports/implementation-playbook.md'
+    'playbook': 'reports/implementation-playbook.md',
+    'multi-account': 'reports/multi-account-strategy.md'
   };
   
   for (const [id, url] of Object.entries(reports)) {

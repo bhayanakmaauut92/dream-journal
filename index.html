@@ -433,7 +433,7 @@
     </div>
     <div class="header-right">
       <div class="header-stats">
-        <span><strong>8</strong> items</span>
+        <span><strong>9</strong> items</span>
         <span><strong>Jun 2–6</strong></span>
       </div>
     </div>
@@ -485,6 +485,11 @@
           <span class="dot" style="background:#a855f7"></span>
           Multi-Account
           <span class="badge">corrected</span>
+        </div>
+        <div class="sidebar-item" data-report="black-hat" onclick="switchReport('black-hat')">
+          <span class="dot" style="background:#ef4444"></span>
+          Black Hat Playbook
+          <span class="badge">🔥</span>
         </div>
 
         <div class="sidebar-label">Map</div>
@@ -577,6 +582,15 @@
           <div class="report-status fail">corrected</div>
         </div>
         <div class="report-content" id="content-multi-account">Loading...</div>
+      </div>
+
+      <!-- Black Hat Playbook -->
+      <div class="report" id="report-black-hat">
+        <div class="report-meta">
+          <div class="report-date">Black Hat YouTube Playbook</div>
+          <div class="report-status fail">🔥 gray/black hat</div>
+        </div>
+        <div class="report-content" id="content-black-hat">Loading...</div>
       </div>
 
       <!-- Conversation Map -->
@@ -780,7 +794,8 @@ async function loadReports() {
     'jun5': 'reports/2026-06-05.md',
     'counter-argument': 'reports/counter-argument.md',
     'playbook': 'reports/implementation-playbook.md',
-    'multi-account': 'reports/multi-account-strategy.md'
+    'multi-account': 'reports/multi-account-strategy.md',
+    'black-hat': 'reports/black-hat-playbook.md'
   };
   
   for (const [id, url] of Object.entries(reports)) {
